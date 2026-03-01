@@ -1,4 +1,5 @@
 param (
+    [switch]$CLI,
     [switch]$Silent,
     [switch]$Verbose,
     [switch]$Sysprep,
@@ -6,11 +7,12 @@ param (
     [string]$User,
     [switch]$NoRestartExplorer,
     [switch]$CreateRestorePoint,
-    [switch]$RunAppsListGenerator, [switch]$RunAppConfigurator,
+    [switch]$RunAppsListGenerator,
     [switch]$RunDefaults,
     [switch]$RunDefaultsLite,
     [switch]$RunSavedSettings,
     [string]$Apps,
+    [string]$AppRemovalTarget,
     [switch]$RemoveApps,
     [switch]$RemoveAppsCustom,
     [switch]$RemoveGamingApps,
@@ -20,14 +22,23 @@ param (
     [switch]$ForceRemoveEdge,
     [switch]$DisableDVR,
     [switch]$DisableGameBarIntegration,
+    [switch]$EnableWindowsSandbox,
+    [switch]$EnableWindowsSubsystemForLinux,
     [switch]$DisableTelemetry,
+    [switch]$DisableSearchHistory,
     [switch]$DisableFastStartup,
+    [switch]$DisableBitlockerAutoEncryption,
     [switch]$DisableModernStandbyNetworking,
-    [switch]$DisableBingSearches, [switch]$DisableBing,
+    [switch]$DisableUpdateASAP,
+    [switch]$PreventUpdateAutoReboot,
+    [switch]$DisableDeliveryOptimization,
+    [switch]$DisableBing,
     [switch]$DisableDesktopSpotlight,
-    [switch]$DisableLockscrTips, [switch]$DisableLockscreenTips,
-    [switch]$DisableWindowsSuggestions, [switch]$DisableSuggestions,
+    [switch]$DisableLockscreenTips,
+    [switch]$DisableSuggestions,
+    [switch]$DisableLocationServices,
     [switch]$DisableEdgeAds,
+    [switch]$DisableBraveBloat,
     [switch]$DisableSettings365Ads,
     [switch]$DisableSettingsHome,
     [switch]$ShowHiddenFolders,
@@ -50,8 +61,8 @@ param (
     [switch]$DisablePaintAI,
     [switch]$DisableNotepadAI,
     [switch]$DisableEdgeAI,
-    [switch]$DisableWidgets, [switch]$HideWidgets,
-    [switch]$DisableChat, [switch]$HideChat,
+    [switch]$DisableWidgets,
+    [switch]$HideChat,
     [switch]$EnableEndTask,
     [switch]$EnableLastActiveClick,
     [switch]$ClearStart,
@@ -59,8 +70,13 @@ param (
     [switch]$ClearStartAllUsers,
     [string]$ReplaceStartAllUsers,
     [switch]$RevertContextMenu,
+    [switch]$DisableDragTray,
     [switch]$DisableMouseAcceleration,
     [switch]$DisableStickyKeys,
+    [switch]$DisableWindowSnapping,
+    [switch]$DisableSnapAssist,
+    [switch]$DisableSnapLayouts,
+    [switch]$HideTabsInAltTab, [switch]$Show3TabsInAltTab, [switch]$Show5TabsInAltTab, [switch]$Show20TabsInAltTab,
     [switch]$HideHome,
     [switch]$HideGallery,
     [switch]$ExplorerToHome,
@@ -68,12 +84,12 @@ param (
     [switch]$ExplorerToDownloads,
     [switch]$ExplorerToOneDrive,
     [switch]$AddFoldersToThisPC,
-    [switch]$DisableOnedrive, [switch]$HideOnedrive,
-    [switch]$Disable3dObjects, [switch]$Hide3dObjects,
-    [switch]$DisableMusic, [switch]$HideMusic,
-    [switch]$DisableIncludeInLibrary, [switch]$HideIncludeInLibrary,
-    [switch]$DisableGiveAccessTo, [switch]$HideGiveAccessTo,
-    [switch]$DisableShare, [switch]$HideShare
+    [switch]$HideOnedrive,
+    [switch]$Hide3dObjects,
+    [switch]$HideMusic,
+    [switch]$HideIncludeInLibrary,
+    [switch]$HideGiveAccessTo,
+    [switch]$HideShare
 )
 
 # Show error if current powershell environment does not have LanguageMode set to FullLanguage 
@@ -109,7 +125,7 @@ catch {
 if (Test-Path "$env:TEMP/Win11Debloat") {
     Write-Output ""
     Write-Output "> Cleaning up old Win11Debloat folder..."
-    Get-ChildItem -Path "$env:TEMP/Win11Debloat" -Exclude CustomAppsList,LastUsedSettings.json,Win11Debloat.log | Remove-Item -Recurse -Force
+    Get-ChildItem -Path "$env:TEMP/Win11Debloat" -Exclude CustomAppsList,LastUsedSettings.json,Win11Debloat.log,Logs | Remove-Item -Recurse -Force
 }
 
 Write-Output ""
@@ -137,8 +153,16 @@ $arguments = $($PSBoundParameters.GetEnumerator() | ForEach-Object {
 Write-Output ""
 Write-Output "> Running Win11Debloat..."
 
+# Minimize the powershell window when no parameters are provided
+if ($arguments.Count -eq 0) {
+    $windowStyle = "Minimized"
+}
+else {
+    $windowStyle = "Normal"
+}
+
 # Run Win11Debloat script with the provided arguments
-$debloatProcess = Start-Process powershell.exe -PassThru -ArgumentList "-executionpolicy bypass -File $env:TEMP\Win11Debloat\Win11Debloat.ps1 $arguments" -Verb RunAs
+$debloatProcess = Start-Process powershell.exe -WindowStyle $windowStyle -PassThru -ArgumentList "-executionpolicy bypass -File $env:TEMP\Win11Debloat\Win11Debloat.ps1 $arguments" -Verb RunAs
 
 # Wait for the process to finish before continuing
 if ($null -ne $debloatProcess) {
@@ -151,7 +175,7 @@ if (Test-Path "$env:TEMP/Win11Debloat") {
     Write-Output "> Cleaning up..."
 
     # Cleanup, remove Win11Debloat directory
-    Get-ChildItem -Path "$env:TEMP/Win11Debloat" -Exclude CustomAppsList,LastUsedSettings.json,Win11Debloat.log | Remove-Item -Recurse -Force
+    Get-ChildItem -Path "$env:TEMP/Win11Debloat" -Exclude CustomAppsList,LastUsedSettings.json,Win11Debloat.log,Logs | Remove-Item -Recurse -Force
 }
 
 Write-Output ""
