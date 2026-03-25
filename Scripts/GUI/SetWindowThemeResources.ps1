@@ -30,6 +30,8 @@ function SetWindowThemeResources {
         $window.Resources.Add("InputFocusColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#1f1f1f")))
         $window.Resources.Add("ScrollBarThumbColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#3d3d3d")))
         $window.Resources.Add("ScrollBarThumbHoverColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4b4b4b")))
+        $window.Resources.Add("TitlebarButtonHover", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#2d2d2d")))
+        $window.Resources.Add("TitlebarButtonPressed", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#292929")))
         $window.Resources.Add("AppIdColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#afafaf")))
         $window.Resources.Add("SearchHighlightColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4A4A2A")))
         $window.Resources.Add("SearchHighlightActiveColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#8A7000")))
@@ -60,6 +62,8 @@ function SetWindowThemeResources {
         $window.Resources.Add("InputFocusColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#fbfbfb")))
         $window.Resources.Add("ScrollBarThumbColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#b9b9b9")))
         $window.Resources.Add("ScrollBarThumbHoverColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#8b8b8b")))
+        $window.Resources.Add("TitlebarButtonHover", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#e1e1e1")))
+        $window.Resources.Add("TitlebarButtonPressed", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#e6e6e6")))
         $window.Resources.Add("AppIdColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#666666")))
         $window.Resources.Add("SearchHighlightColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#FFF4CE")))
         $window.Resources.Add("SearchHighlightActiveColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#FFD966")))
@@ -74,4 +78,17 @@ function SetWindowThemeResources {
     $window.Resources.Add("WarningIconColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#FFB900")))
     $window.Resources.Add("ErrorIconColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#E81123")))
     $window.Resources.Add("QuestionIconColor", [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#0078D4")))
+
+    # Load and merge shared styles
+    if ($script:SharedStylesSchema -and (Test-Path $script:SharedStylesSchema)) {
+        $sharedXaml = Get-Content -Path $script:SharedStylesSchema -Raw
+        $sharedReader = [System.Xml.XmlReader]::Create([System.IO.StringReader]::new($sharedXaml))
+        try {
+            $sharedDict = [System.Windows.Markup.XamlReader]::Load($sharedReader)
+            $window.Resources.MergedDictionaries.Add($sharedDict)
+        }
+        finally {
+            $sharedReader.Close()
+        }
+    }
 }
